@@ -3,7 +3,7 @@ package com.wukong.atp.gear
 import com.typesafe.scalalogging.LazyLogging
 import slick.dbio.DBIO
 import slick.jdbc.JdbcProfile
-import slick.jdbc.meta.MColumn
+import slick.jdbc.meta.{MColumn, MQName}
 
 import scala.concurrent.Await
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -31,10 +31,12 @@ class Fetcher(val profile: String, atables: Seq[ATable]) extends LazyLogging {
   }
 
   private def rawCreateMode(): Unit = {
+    /*
     val action = profileInstance.defaultTables.flatMap {list => {
       val list2 = if (atables.nonEmpty) list.filter(x=>atables.map(_.name).contains(x.name.name)) else list
       DBIO.sequence(list2.map(_.getColumns))
-    }}
+    }}*/
+    val action = DBIO.sequence(atables.map(x => MColumn.getColumns(MQName.local(x.name), "%")))
     val future = db.run(action).map {r: Seq[Vector[MColumn]] => {
       val results = r.map { columns =>
         val c = columns(0)
