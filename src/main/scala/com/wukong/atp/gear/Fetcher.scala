@@ -1,5 +1,6 @@
 package com.wukong.atp.gear
 
+import com.typesafe.scalalogging.LazyLogging
 import slick.dbio.DBIO
 import slick.jdbc.JdbcProfile
 import slick.jdbc.meta.MColumn
@@ -13,7 +14,7 @@ import scala.concurrent.duration._
   *
   * @author 01372461
   */
-class Fetcher(val profile: String, atables: Seq[ATable]) {
+class Fetcher(val profile: String, atables: Seq[ATable]) extends LazyLogging {
 
   val profileInstance: JdbcProfile =
     Class.forName(profile + "$").getField("MODULE$").get(null).asInstanceOf[JdbcProfile]
@@ -40,6 +41,7 @@ class Fetcher(val profile: String, atables: Seq[ATable]) {
         Generator.gen(columns, alias(c.table.name))
       }
       Formater.write(results)
+      logger.info(">>>>  Finish. <<<< ")
     }}
     Await.result(future, Duration.Inf)
   }

@@ -20,16 +20,28 @@ libraryDependencies ++= Seq(
   "mysql" % "mysql-connector-java" % "5.1.36",
 )
 
-mappings in (Compile, packageBin) ~= { _.filter(!_._1.getName.endsWith(".conf")) }
+mappings in (Compile, packageBin) ~= { _.filter(!_._1.getName.matches(".*\\.(conf|xml)$")) }
 
 mainClass in Compile := Some("com.wukong.atp.gear.Application")
 
 enablePlugins(JavaAppPackaging)
 
-mappings in Universal += {
-  val conf = (resourceDirectory in Compile).value / "application.conf"
-  conf -> "conf/application.conf"
+mappings in Universal ++= {
+  val resDir = (resourceDirectory in Compile).value
+  List(
+    resDir / "application.conf" -> "conf/application.conf",
+    resDir / "logback.xml" -> "conf/logback.xml"
+  )
 }
 
-bashScriptExtraDefines += """addJava "-Dconfig.file=${app_home}/../conf/application.conf""""
-batScriptExtraDefines += """call :add_java "-Dconfig.file=%APP_HOME%\conf\application.conf""""
+bashScriptExtraDefines +=
+  """
+    |addJava "-Dconfig.file=${app_home}/../conf/application.conf"
+    |addJava "-Dlogback.configurationFile=${app_home}/../conf/logback.xml"
+  """.stripMargin
+
+batScriptExtraDefines +=
+  """
+    |call :add_java "-Dconfig.file=%APP_HOME%\conf\application.conf"
+    |call :add_java "-Dlogback.configurationFile=%APP_HOME%\conf\logback.xml"
+  """.stripMargin
